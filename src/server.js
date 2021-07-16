@@ -2,23 +2,36 @@ require('dotenv').config()
 
 const Hapi = require('@hapi/hapi')
 const Jwt = require('@hapi/jwt')
-const MusicsService = require('./services/postgres/MusicsService')
-const MusicsValidator = require('./validator/musics')
-const musics = require('./api/musics')
+const SongsService = require('./services/postgres/SongsService')
+const SongsValidator = require('./validator/songs')
+const songs = require('./api/songs')
 
-const UsersService = require('./services/postgres/UsersService')
-const UserValidator = require('./validator/users')
+// users
 const users = require('./api/users')
+const UsersService = require('./services/postgres/UsersService')
+const UsersValidator = require('./validator/users')
 
+// authentications
 const authentications = require('./api/authentications')
 const AuthenticationsService = require('./services/postgres/AuthenticationsService')
-const AuthenticationsValidator = require('./validator/authentications')
 const TokenManager = require('./tokenize/TokenManager')
+const AuthenticationsValidator = require('./validator/authentications')
+
+// playlists
+const playlists = require('./api/playlists')
+const PlaylistsService = require('./services/postgres/PlaylistsService')
+const PlaylistsValidator = require('./validator/playlists')
+
+// playlistsongs
+const playlistSongs = require('./api/playlistsongs')
+const PlaylistSongsService = require('./services/postgres/SongPlaylistService')
 
 const init = async () => {
-  const musicService = new MusicsService()
+  const songService = new SongsService()
   const usersService = new UsersService()
   const authenticationsService = new AuthenticationsService()
+  const playlistsService = new PlaylistsService()
+  const playlistSongsService = new PlaylistSongsService(playlistsService)
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -54,17 +67,17 @@ const init = async () => {
 
   await server.register([
     {
-      plugin: musics,
+      plugin: songs,
       options: {
-        service: musicService,
-        validator: MusicsValidator
+        service: songService,
+        validator: SongsValidator
       }
     },
     {
       plugin: users,
       options: {
         service: usersService,
-        validator: UserValidator
+        validator: UsersValidator
       }
     },
     {
@@ -74,6 +87,20 @@ const init = async () => {
         usersService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator
+      }
+    },
+    {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: PlaylistsValidator
+      }
+    },
+    {
+      plugin: playlistSongs,
+      options: {
+        service: playlistSongsService,
+        validator: SongsValidator
       }
     }
   ])
