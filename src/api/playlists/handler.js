@@ -54,14 +54,12 @@ class PlaylistsHandler {
     try {
       const { id: credentialId } = request.auth.credentials
       const playlists = await this._service.getPlaylists(credentialId)
-      const response = h.response({
+      return {
         status: 'success',
         data: {
           playlists
         }
-      })
-      response.code(200)
-      return response
+      }
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({

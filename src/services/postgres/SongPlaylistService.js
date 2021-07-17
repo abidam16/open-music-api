@@ -10,7 +10,7 @@ class SongPlaylistService {
   }
 
   async addSongPlaylist (playlistId, owner, songId) {
-    await this._playlistsService.verifyPlaylistOwner(playlistId, owner)
+    await this._playlistsService.verifyPlaylistAccess(playlistId, owner)
     const id = nanoid(16)
     const query = {
       text: 'INSERT INTO playlistsongs VALUES($1, $2, $3) RETURNING id',
@@ -27,8 +27,7 @@ class SongPlaylistService {
   }
 
   async getSongsPlaylist (playlistId, owner) {
-    await this._playlistsService.verifyPlaylistOwner(playlistId, owner)
-    console.log(playlistId)
+    await this._playlistsService.verifyPlaylistAccess(playlistId, owner)
     const query = {
       text: `SELECT s.id, s.title, s.performer
         FROM playlistsongs as p INNER JOIN songs as s ON p.song_id = s.id
@@ -46,7 +45,7 @@ class SongPlaylistService {
   }
 
   async deleteSongPlaylist (playlistId, songId, owner) {
-    await this._playlistsService.verifyPlaylistOwner(playlistId, owner)
+    await this._playlistsService.verifyPlaylistAccess(playlistId, owner)
     await this.verifySongId(songId)
     const query = {
       text: 'DELETE FROM playlistsongs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
